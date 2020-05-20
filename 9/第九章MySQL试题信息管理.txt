@@ -1,0 +1,115 @@
+-- 9.4.1创建数据库、使用数据库、查看所有数据库
+create database questiondb;
+use questiondb;
+show databases;
+
+-- 9.4.2 建表、查看结构、复制表
+create table t_question(
+	ID int not null primary key auto_increment,
+	Type int not null check(Type IN(0,1)),
+	ItemContent varchar(50) not null,
+	Analysis varchar(200),
+	del int not null default 0 check(Del in(0,1))
+);
+create table t_option(
+	ID int not null primary key auto_increment,
+	QuestionID int not null,
+	Num int not null check(Num IN(0,1,2,3)),
+	OptionContent varchar(100) not null,
+	Istrue int not null check(IsTrue IN(0,1)),
+	Del int not null default 0 check(Del IN(0,1)),
+	foreign key(QuestionID) references t_question(ID)
+);
+desc t_question;
+create table t_questionCopy (LIKE t_question);
+
+-- 9.4.3  修改表结构
+alter table t_question add Score float(3,1) default '0';
+alter table t_question modify column Score int;
+alter table t_question change Score Point int default '0';
+desc t_question;
+
+alter table t_questionCopy rename t_questionCopy1;
+show tables;
+
+desc t_questioncopy1;
+alter table t_questioncopy1 drop Point;
+drop table t_questioncopy1 cascade;
+
+-- 9.4.4 创建视图
+CREATE view v_question AS select ID,ItemContent from t_question;
+
+-- 9.4.5创建索引
+create unique INDEX QueID on t_question(ID) DESC;
+
+-- 9.4.6 管理数据表--增删
+insert into t_question(ID,Type,ItemContent,Analysis,Del) values(1,0,'数据库系统核心','数据库知识',0);
+select * from t_question;
+INSERT INTO t_option VALUES(1,1,0,'数据模型',1,0),(2,1,1,'数据管理系统',0,0),(3,1,0,'数据库',0,0),(4,1,3,'数据库管理员',0,0);
+select * from t_option;
+delete from t_question where ID =2;
+select * from t_question;
+
+-- 9.4.7  查看数据表--数据
+select ID,ItemContent from t_question;
+select * from t_question;
+select ID,Type,ItemContent,Analysis,Del,Point from t_question;
+select * from t_question where ID < 2 OR ID > 3;
+
+-- 9.4.8  导出数据库到指定的文件夹和导入数据库脚本文件
+mysqldump -uroot -p --default-character-set=utf8 questiondb>d:/1/questiondb_export.sql
+source D:/1/questiondb_export.sql
+
+-- 9.4.9  事务控制
+-- 开启事务
+start TRANSACTION;
+-- 或者
+BEGIN WORK;
+-- 事务回滚
+update t_question set Del = 1 where ID = 1;
+rollback;
+select * from t_question;
+-- 事务确认
+start TRANSACTION;
+update t_question set Del = 1 where ID = 1;
+update t_option set Del = 1 where QuestionID = 1;
+COMMIT;
+select * from t_question;
+select * from t_option;
+
+-- 开启自动提交
+set AUTOCOMMINT = 1;
+-- 关闭自动提交
+set autocommint = 0;
+-- 查看自动提交当前的状态
+show variables like 'autocommint';
+
+-- 9.4.10 触发器
+-- 创建触发器
+CREATE TRIGGER shanchu AFTER UPDATE on t_question for each row update t_option set Del=(select Del from t_question where t_option.QuestionID = t_question.ID);
+-- 激活触发器
+update t_question set Del = 1 where ID=1;
+select * from t_question;
+select * from t_option;
+-- 删除触发器
+drop TRIGGER if exists shanchu;
+
+-- 9.4.11 存储过程
+-- 创建存储过程
+delimter $$
+create PROCEDURE xinzeng()
+BEGIN
+insert into t_question(ID,Type,ItemContent,Analysis,Del) VALUES (0,'新增试题','存储过程',0)；
+insert into t_option(QuestionID,Num,OptionContent,IsTrue) VALUES ('1','0','新增选项','1');
+END
+$$
+delimiter;
+
+-- 调用存储过程
+CALL xinzeng();
+
+-- 查看存储过程
+show PROCEDURE status \G;
+
+-- 删除存储过程
+DROP PROCEDURE IF EXISTS xinzeng();

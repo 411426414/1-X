@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+		<title>留言页面</title>
+		<link rel="stylesheet" href="index.css">
+		<script src="jquery.js"></script>
+		<script src="jquery-ui.min.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+
+	<body>
+		<div id="wrapper">
+			<!--留言显示区域-->
+			<div class="comment">
+				<ul class="message">
+				</ul>
+			</div>
+			<!--留言发布区域-->
+			<div class="Wrap">
+				<!--留言输入框-->
+				<textarea placeholder="输入留言内容..." id="Content"></textarea>
+				<!--按钮-->
+				<button id="Message">发布留言</button>
+			</div>
+		</div>
+		<script type="text/javascript">
+			$('#Content').on('focus', function() {
+				$('.message').toggle('blind',500);
+				setTimeout(function() {
+					$("textarea").animate({
+						height: '200px'
+					}, 300);
+				}, 500)
+			})
+			$('#Message').on('click', function() {
+				$('.message').toggle('blind', 500)
+				$('textarea').animate({
+					height: '80px'
+				}, 300)
+
+				var html = "<li><div class='content'>" + $('#Content').val() + "</div></li>"
+				if($("#Content").val() != '') {
+					setTimeout(function() {
+						$('.message').prepend(html)
+						$('textarea').val('')
+					}, 1000)
+				}
+			})
+		</script>
+	</body>
+</html>
